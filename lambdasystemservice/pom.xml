@@ -60,7 +60,7 @@
         <dependency>
             <groupId>com.coreos</groupId>
             <artifactId>jetcd-core</artifactId>
-            <version>${jetcd.version}</version>
+            <version>0.0.1</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -87,6 +87,11 @@
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
             <version>1.9.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.pera</groupId>
+            <artifactId>lambda-netty-loadbalancer</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
 
 

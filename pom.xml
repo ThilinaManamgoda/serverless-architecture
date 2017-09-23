@@ -14,7 +14,6 @@
     </modules>
     <packaging>pom</packaging>
 
-
     <properties>
         <java.version>1.8</java.version>
         <netty.all.version>4.1.12.Final</netty.all.version>
@@ -24,6 +23,7 @@
         <jetcd.version>0.1.0-SNAPSHOT</jetcd.version>
         <spring.version>3.0.5.RELEASE</spring.version>
     </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -56,8 +56,7 @@
             <artifactId>log4j</artifactId>
             <version>${log4j.version}</version>
         </dependency>
-
-
     </dependencies>
+
 
 </project>

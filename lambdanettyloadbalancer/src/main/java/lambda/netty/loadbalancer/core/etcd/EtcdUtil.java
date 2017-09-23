@@ -21,6 +21,7 @@ package lambda.netty.loadbalancer.core.etcd;
 
 import com.coreos.jetcd.Client;
 import com.coreos.jetcd.KV;
+
 import com.coreos.jetcd.Txn;
 import com.coreos.jetcd.Watch;
 import com.coreos.jetcd.data.ByteSequence;
@@ -41,6 +42,7 @@ import org.apache.log4j.Logger;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+
 
 public class EtcdUtil {
     final static Logger logger = Logger.getLogger(EtcdUtil.class);

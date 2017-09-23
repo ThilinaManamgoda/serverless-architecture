@@ -79,7 +79,7 @@ public class UserPing extends Thread {
 
     @Override
     public void run() {
-        List<? extends Server> list = getServers(this.user);
+        List<? extends Server> list = this.getServers(this.user);
         String ipAddress = null;
         boolean pingStatus = false;
         int count;
