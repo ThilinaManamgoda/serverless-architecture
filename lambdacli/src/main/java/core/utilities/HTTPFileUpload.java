@@ -67,6 +67,7 @@ public class HTTPFileUpload  extends HttpUploadClient{
                 try {
                     result = uploadFileAsMultiPart(file,attributes);
 
+
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -96,10 +97,16 @@ public class HTTPFileUpload  extends HttpUploadClient{
         return array[array.length - 1].equals(fileType.getExtention());
     }
 
-    public static void main(String[] args) throws IOException {
-        List<Map.Entry<String, String>> attributes = new ArrayList<>();
 
-        attributes.add(new AbstractMap.SimpleEntry<String, String>("testkey","testValue"));
-        System.out.println(new HTTPFileUpload().uploadFile(PYTHON, new File("/home/deshan/main.py"),attributes ));
-    }
+//    public static void main(String[] args) throws IOException {
+//        List<Map.Entry<String, String>> attributes = new ArrayList<>();
+//
+//        attributes.add(new AbstractMap.SimpleEntry<String, String>("user_id",String.valueOf(34343)));
+//        attributes.add(new AbstractMap.SimpleEntry<String, String>("user_domain","maaa"));
+//        attributes.add(new AbstractMap.SimpleEntry<String, String>("function_name","rrrr"));
+//        attributes.add(new AbstractMap.SimpleEntry<String, String>("function_event","ete.ere"));
+//        attributes.add(new AbstractMap.SimpleEntry<String, String>("function_type","2"));
+//        System.out.println(HTTPFileUpload.uploadFile(PYTHON, new File("/Users/maanadev/Projects/uni/serverless-architecture/lambdacli/test.py"),attributes ));
+//    }
+
 }

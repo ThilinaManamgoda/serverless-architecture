@@ -19,6 +19,7 @@
 
 package transport.http.server;
 
+import db.modal.*;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
@@ -28,6 +29,13 @@ import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder.EndOfDataDec
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder.ErrorDataDecoderException;
 import io.netty.handler.codec.http.multipart.InterfaceHttpData.HttpDataType;
 import io.netty.util.CharsetUtil;
+import lambda.netty.loadbalancer.core.etcd.EtcdClientException;
+import lambda.netty.loadbalancer.core.etcd.EtcdUtil;
+import lambda.netty.loadbalancer.core.loadbalance.StateImplJsonHelp;
+import lambda.netty.loadbalancer.core.loadbalance.statemodels.InstanceStates;
+import lambda.netty.loadbalancer.core.loadbalance.statemodels.OSVInstance;
+import lambda.netty.loadbalancer.core.loadbalance.statemodels.State;
+import lambda.netty.loadbalancer.core.loadbalance.statemodels.StateImpl;
 import launch.ConfigConstantKeys;
 import launch.Launcher;
 import object_storage.ObjectStorage;
@@ -64,6 +72,8 @@ public class HttpUploadServerHandler extends SimpleChannelInboundHandler<HttpObj
     private boolean isFileUpload = true;
     private HttpData partialContent;
     private HttpPostRequestDecoder decoder;
+    private User user;
+    private Function function;
 
     HttpUploadServerHandler() {
         super(false);
@@ -86,7 +96,9 @@ public class HttpUploadServerHandler extends SimpleChannelInboundHandler<HttpObj
                     notAFileUpload(ctx, msg);
                     return;
                 }
-
+                // allocating memory
+                user = new User();
+                function = new Function();
                 try {
                     decoder = new HttpPostRequestDecoder(factory, request);
                 } catch (ErrorDataDecoderException e1) {
@@ -190,18 +202,52 @@ public class HttpUploadServerHandler extends SimpleChannelInboundHandler<HttpObj
                 }
             }
         } catch (EndOfDataDecoderException e1) {
-
             logger.info("Done uploading");
 
         }
     }
 
+    private void fillData(String key, String value) {
+        switch (key) {
+            case "user_id": {
+                user.setId(Long.parseLong(value));
+                logger.info("User Id: " + value);
+                break;
+            }
+            case "user_domain": {
+                user.setDomain(value);
+                logger.info("User: " + user.getId() + " Domain: " + value);
+                break;
+            }
+            case "function_name": {
+                function.setName(value);
+                logger.info("User: " + user.getId() + " Function Name: " + value);
+                break;
+            }
+            case "function_event": {
+                function.setEvent(value);
+                logger.info("User: " + user.getId() + " Function event: " + value);
+                break;
+            }
+            case "function_type": {
+                function.setType(setFunctionType(Integer.parseInt(value)));
+                logger.info("User: " + user.getId() + " Function type: " + value);
+                break;
+            }
+        }
+
+    }
+
+    private FileType setFunctionType(int value) {
+        //TODO Implement a way to find file type
+        return FileType.PYTHON;
+    }
+
     private void writeHttpData(InterfaceHttpData data) {
         if (data.getHttpDataType() == HttpDataType.Attribute) {
             Attribute attribute = (Attribute) data;
-            String value;
             try {
-                value = attribute.getValue();
+                fillData(attribute.getName(), attribute.getValue());
             } catch (IOException e1) {
                 // Error while reading data from File, only print name and error
                 e1.printStackTrace();
@@ -220,17 +266,25 @@ public class HttpUploadServerHandler extends SimpleChannelInboundHandler<HttpObj
                         while (byteBuf.isReadable()) {
                             fileOutputStream.write(byteBuf.readByte());
                         }
-                        // Store user info mongodb
+                       //Store user info mongodb
+                        assignFunctionToUser();
 
+                        // save user in etcd
+                        EtcdUtil.putValue(String.valueOf(user.getId()), UserJsonHelp.ToJson(user));
 
+                        // push function stte to etcd
+                        pushStateToEtcd();
 
-                        // Upload function to Minion server
-//                        ObjectStorage objectStorage = ObjectStorageImpl.getInstance();
-//                        //need to come up with a bucket id and objname
-//                        objectStorage.storeOBJ("test","maanadev",  fileUpload.getFilename());
+                        //Upload function to Minion server
+                        ObjectStorage objectStorage = ObjectStorageImpl.getInstance();
+                        // bucket = user ID      ObjName = functionName
+                        objectStorage.storeOBJ(String.valueOf(user.getId()), function.getName(), fileUpload.getFilename());
                     } catch (IOException e) {
                         logger.error("Cannot write to the file", e);
-                    } finally {
+                    } catch (EtcdClientException e) {
+                        e.printStackTrace();
+
+                    }finally {
                         try {
                             fileOutputStream.close();
                         } catch (IOException e) {
@@ -243,6 +297,33 @@ public class HttpUploadServerHandler extends SimpleChannelInboundHandler<HttpObj
                 }
             }
         }
+    }
+
+    private void pushStateToEtcd() {
+
+        OSVInstance osvInstance = new OSVInstance();
+        State state = new StateImpl();
+        String domain = function.getDomainName();
+        state.setDomain(domain);
+        state.setState(InstanceStates.DOWN);
+        state.pushOSVInstance(osvInstance);
+        try {
+            EtcdUtil.putValue(domain, StateImplJsonHelp.toString(state));
+        } catch (EtcdClientException e) {
+            logger.error("Cannot' convert to String !", e);
+        }
+        logger.info("function state is added to Etcd !: " + domain);
+    }
+
+    private void assignFunctionToUser() {
+        // Function domain is created by user.Domain + function.Name
+        function.setDomainName( function.getName()+user.getDomain() );
+        user.addFunction(function);
+        logger.info("Function is assigned to User ! " + function.getDomainName());
+    }
+
+    private void initiateFunction() {
+
     }
 
     private void writeOkResponse(Channel channel) {
@@ -264,10 +345,11 @@ public class HttpUploadServerHandler extends SimpleChannelInboundHandler<HttpObj
         response.headers().set(HttpHeaders.Names.CONTENT_LENGTH, content.readableBytes());
         // Write the response.
         ChannelFuture future = channel.writeAndFlush(response);
-        // Close the connection after the write operation is done if necessary.
+//         Close the connection after the write operation is done if necessary.
         if (close) {
             future.addListener(ChannelFutureListener.CLOSE);
         }
+//        channel.close();
     }
 
     @Override

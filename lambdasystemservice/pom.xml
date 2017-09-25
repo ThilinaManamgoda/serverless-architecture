@@ -89,11 +89,11 @@
             <artifactId>commons-configuration2</artifactId>
             <version>2.1.1</version>
         </dependency>
-        <dependency>
-            <groupId>com.maanadev.mongodb</groupId>
-            <artifactId>Mongodb-Jongo-Java</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>com.maanadev.mongodb</groupId>-->
+            <!--<artifactId>Mongodb-Jongo-Java</artifactId>-->
+            <!--<version>0.0.1-SNAPSHOT</version>-->
+        <!--</dependency>-->
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
@@ -115,11 +115,7 @@
             <version>1.0.2</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.jongo</groupId>
-            <artifactId>jongo</artifactId>
-            <version>1.2</version>
-        </dependency>
+
         <dependency>
             <groupId>org.pera</groupId>
             <artifactId>lambda-cli</artifactId>

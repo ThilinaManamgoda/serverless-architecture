@@ -29,23 +29,38 @@ import org.springframework.shell.core.annotation.CliOption;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Component
 public class MainCLI implements CommandMarker {
 
     private static final String ALL_FUNCTIONS = "ALL_FUNCTIONSlf";
-
+// cf --id 13232 --domain maanadev.org --functionName test1 --runTime python --event minio --file /Users/maanadev/Projects/uni/serverless-architecture/lambdacli/test.py
     @CliCommand(value = { "create_func", "cf" })
     public String createFuntion(
-//            @CliOption(key = "name",mandatory = true) String name,
+            @CliOption(key = "id",mandatory = true) long id,
+            @CliOption(key = "domain",mandatory = true) String domain,
+            @CliOption(key = "functionName",mandatory = true) String functionName,
+            @CliOption(key = "runTime",mandatory = true) String runTime,
+            @CliOption(key = "event",mandatory = true) String event,
             @CliOption(key = "file",mandatory = true) String file
-//            @CliOption(key="runtime",mandatory = true)String runtime,
-//            @CliOption(key="event",mandatory = true)String event
     ) throws FileNotFoundException {
 
         String result=null;
+
+        List<Map.Entry<String, String>> attributes = new ArrayList<>();
+
+        attributes.add(new AbstractMap.SimpleEntry<String, String>("user_id",String.valueOf(id)));
+        attributes.add(new AbstractMap.SimpleEntry<String, String>("user_domain",domain));
+        attributes.add(new AbstractMap.SimpleEntry<String, String>("function_name",functionName));
+        attributes.add(new AbstractMap.SimpleEntry<String, String>("function_event",event));
+        attributes.add(new AbstractMap.SimpleEntry<String, String>("function_type","2"));
         try {
             result= new HTTPFileUpload().uploadFile(FileType.JAVA,new File(file),null);
+
         } catch (IOException e) {
             e.printStackTrace();
             result = "wrong";

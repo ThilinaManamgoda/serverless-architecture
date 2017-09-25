@@ -40,6 +40,11 @@
         </connection>
     </obj-storage>
 
+    <etcd-cluster>
+        <connections>
+            <url>http://localhost:2379</url>
+        </connections>
+    </etcd-cluster>
 
     <connections>
         <openstack>
@@ -47,4 +52,11 @@
             <password>1qaz2wsx@</password>
         </openstack>
     </connections>
+
+    <mongoDB>
+        <host>127.0.0.1</host>
+        <port>32772</port>
+        <db-name>faas</db-name>
+        <user-collection>users</user-collection>
+    </mongoDB>
 </configuration>

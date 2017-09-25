@@ -35,7 +35,6 @@ public class HttpUploadClientHandler extends SimpleChannelInboundHandler<HttpObj
     @Override
     public void channelRead0(ChannelHandlerContext ctx, HttpObject msg) {
         if (msg instanceof HttpResponse) {
-
             HttpResponse response = (HttpResponse) msg;
            if(response.status().code()==HttpResponseStatus.OK.code()){
              customFuture.changeResult(true);

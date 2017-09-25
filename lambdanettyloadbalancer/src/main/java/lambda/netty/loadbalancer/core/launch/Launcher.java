@@ -59,6 +59,8 @@ public class Launcher {
     // start implementing after the static block. it's loading the configuration
     private static ExecutorService service = Executors.newFixedThreadPool(Launcher.getIntValue(ConfigConstants.CONFIG_LAUNCHER_THREADS));
     public final static boolean SCALABILITY_ENABLED = Launcher.getBoolean(ConfigConstants.CONFIG_SCALABILITY_ENABLED);
+    public static String ETCD_CLUSTER = Launcher.getString(ConfigConstants.CONFIG_ETCD_CLUSTER_CONNECTIONS_URL);
+
     private static XMLConfiguration xmlConfiguration;
 
 
@@ -124,7 +126,7 @@ public class Launcher {
 //        } catch (ExecutionException e) {
 //            e.printStackTrace();
 //        }
-
+        EtcdUtil.setUp(ETCD_CLUSTER);
         try {
             ConfigLogger.printFields();
         } catch (Exception e) {

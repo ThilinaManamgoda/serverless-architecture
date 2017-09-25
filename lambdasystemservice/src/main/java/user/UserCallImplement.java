@@ -22,10 +22,9 @@ package user;
 import availability.UserPing;
 import com.coreos.jetcd.kv.GetResponse;
 import com.coreos.jetcd.kv.PutResponse;
-import com.maanadev.mongo.MongodbImplement;
 import compute.ServerLaunchImplement;
 import connections.openstack.OpenstackAdminConnection;
-import db.modal.FunctionDataModal;
+import db.modal.Function;
 import db.modal.FunctionType;
 import lambda.netty.loadbalancer.core.etcd.EtcdClientException;
 import lambda.netty.loadbalancer.core.etcd.EtcdUtil;
@@ -35,7 +34,6 @@ import lambda.netty.loadbalancer.core.loadbalance.statemodels.State;
 import org.apache.log4j.Logger;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.model.compute.Server;
-import org.jongo.MongoCursor;
 import user.request.JsonHelper;
 import user.request.OsvUpload;
 
@@ -127,8 +125,8 @@ public class UserCallImplement implements UserCall {
             /**
              * write data to etcd
              */
-            FunctionDataModal modal = new FunctionDataModal();
-            JsonHelper helper = new JsonHelper<FunctionDataModal>(FunctionDataModal.class);
+            Function modal = new Function();
+            JsonHelper helper = new JsonHelper<Function>(Function.class);
             String modalJson = helper.objToJson(modal);
 
             try {

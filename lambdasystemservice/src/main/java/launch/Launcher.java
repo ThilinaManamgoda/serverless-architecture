@@ -19,6 +19,8 @@
 
 package launch;
 
+import lambda.netty.loadbalancer.core.ConfigConstants;
+import lambda.netty.loadbalancer.core.etcd.EtcdUtil;
 import org.apache.commons.configuration2.XMLConfiguration;
 import org.apache.commons.configuration2.builder.fluent.Configurations;
 import org.apache.commons.configuration2.ex.ConfigurationException;
@@ -45,7 +47,9 @@ public class Launcher {
         }
     }
 
-    public static final String TMP_FILE_LOCATION = Launcher.getString(ConfigConstantKeys.TRANSPORT_TMP_FILE_LOCATION);
+    public static final String TMP_FILE_LOCATION = getString(ConfigConstantKeys.TRANSPORT_TMP_FILE_LOCATION);
+    static String ETCD_CLUSTER = getString(ConfigConstants.CONFIG_ETCD_CLUSTER_CONNECTIONS_URL);
+
     private static final ExecutorService service = Executors.newFixedThreadPool(getInt(ConfigConstantKeys.LAUNCHER_THREADS));
 
     public static String getString(String tag) {
@@ -58,6 +62,7 @@ public class Launcher {
 
 
     public static void main(String[] args) {
+        EtcdUtil.setUp(ETCD_CLUSTER);
         logger.info("Starting HTTP Transport service");
         service.submit(new HttpServerLauncher());
     }

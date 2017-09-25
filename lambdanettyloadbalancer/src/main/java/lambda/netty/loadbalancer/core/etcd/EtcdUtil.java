@@ -46,19 +46,22 @@ import java.util.concurrent.ExecutionException;
 
 public class EtcdUtil {
     final static Logger logger = Logger.getLogger(EtcdUtil.class);
-    public static String ETCD_CLUSTER = Launcher.getString(ConfigConstants.CONFIG_ETCD_CLUSTER_CONNECTIONS_URL);
     private static KV kvClient = null;
     private static Client client = null;
     private static GetOption getOption = GetOption.newBuilder().withSerializable(true).build();
+    private static boolean isSetup = false;
+    public static   void setUp(String url) {
 
-    static {
+        if(!isSetup){
+            if (kvClient == null && client == null) {
+                logger.info("creating Etcd client !");
+                client = Client.builder().endpoints(url).build();
 
-        if (kvClient == null && client == null) {
-            logger.info("creating Etcd client !");
-            client = Client.builder().endpoints(ETCD_CLUSTER).build();
-
-            kvClient = client.getKVClient();
+                kvClient = client.getKVClient();
+            }
+            isSetup=true;
         }
+
     }
 
     private EtcdUtil() {
@@ -137,6 +140,7 @@ public class EtcdUtil {
             watcher = watch.watch(ByteSequence.fromString(key));
             WatchResponse response = watcher.listen();
             WatchEvent event = response.getEvents().get(0);
+
             logger.info("Watcher event for key: " + key + " action: " + event.getEventType());
             result = Optional.ofNullable(event.getKeyValue().getValue())
                     .map(ByteSequence::toStringUtf8)

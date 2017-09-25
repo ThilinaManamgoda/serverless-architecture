@@ -92,6 +92,8 @@ public class SysServiceHostResolveHandler extends ChannelInboundHandlerAdapter {
                     // user event will be triggered by syshostresolver backend handler with a proxyevent
                     requestIp();
                 } else if (stateImpl.getState() == InstanceStates.STARTING) {
+
+                    //TODO  need to make setWatcher async
                     String state = EtcdUtil.setWatcher(instanceID);
                     State tmp = StateImplJsonHelp.getObject(state);
                     String remoteIp = tmp.getOSVInstance().peek().getHost();
