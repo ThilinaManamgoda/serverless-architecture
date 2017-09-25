@@ -19,12 +19,23 @@
 
 package user;
 
+import com.coreos.jetcd.kv.GetResponse;
+import com.maanadev.mongo.MongodbImplement;
 import compute.ServerLaunchImplement;
 import connections.openstack.OpenstackAdminConnection;
+import lambda.netty.loadbalancer.core.etcd.EtcdClientException;
+import lambda.netty.loadbalancer.core.etcd.EtcdUtil;
+import lambda.netty.loadbalancer.core.loadbalance.StateImplJsonHelp;
+import lambda.netty.loadbalancer.core.loadbalance.statemodels.OSVInstance;
+import lambda.netty.loadbalancer.core.loadbalance.statemodels.State;
+import org.apache.log4j.Logger;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.model.compute.Server;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by deshan on 8/29/17.
@@ -33,11 +44,12 @@ public class UserCallImplement implements UserCall {
 
     OSClient.OSClientV2 os;
     ServerLaunchImplement serverlaunch;
-
+    static Logger log;
 
     public UserCallImplement() {
         this.serverlaunch = null;
         this.os = null;
+        log= Logger.getLogger(UserCallImplement.class.getName());
     }
 
     @Override
@@ -58,6 +70,8 @@ public class UserCallImplement implements UserCall {
             Server server = this.serverlaunch.createOSVInstance(functionName,
                     this.getImageID("java"), this.getNetworks(user));
 
+            log.info(functionName + " function instance created");
+
 
             // upload code
 
@@ -65,6 +79,7 @@ public class UserCallImplement implements UserCall {
 
             if(server!=null) return true;
         }
+        log.error(functionName+" function instance not created");
         return false;
 
     }
@@ -145,8 +160,26 @@ public class UserCallImplement implements UserCall {
      * @return  uuid of the osv instance
      */
     private String getInstanceID(String serviceName) {
+        String uuid = null;
         // get data from etcd
-        return null;
+        try {
+            CompletableFuture<GetResponse> res = EtcdUtil.getValue(serviceName);
+            GetResponse resjson = res.get();
+            String val = String.valueOf(resjson.getKvs().get(0).getValue().toString(StandardCharsets.UTF_8));
+            State stateImpl = StateImplJsonHelp.getObject(val);
+            OSVInstance remoteHost = stateImpl.getOSVInstance().peek();
+            uuid = remoteHost.getUuid().toString();
+        } catch (EtcdClientException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        // if fail get from db
+
+        return uuid;
     }
 
 
@@ -155,8 +188,11 @@ public class UserCallImplement implements UserCall {
      * @param name - function name
      */
     private boolean isNameAvailable(String name) {
-        // check in etcd
+        // check in db
+//        MongodbImplement <
         return true;
 
     }
+
+
 }

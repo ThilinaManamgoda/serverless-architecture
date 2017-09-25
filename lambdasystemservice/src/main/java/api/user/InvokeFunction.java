@@ -25,6 +25,13 @@ public class InvokeFunction extends RestLogic{
 
 
         UserCallImplement call = new UserCallImplement();
+        /**
+         * invoke function in UserCall interface
+         * @param 1 - domain name in json
+         * @param 2 - blocking state in json
+         * @param 3 - arguments in json
+         */
+
         call.invokeFunction(
                 modal.getDomainName(),
                 modal.isBlocking(),

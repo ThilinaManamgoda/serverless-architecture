@@ -18,6 +18,12 @@ public class ListFunction extends RestLogic{
     public FullHttpResponse process(FullHttpRequest fullHttpRequest){
         UserCallImplement userFunctionData = new UserCallImplement();
 
+        /**
+         * list function by the user - call UserCall
+         * @param 1 - user name in headers
+         *
+         */
+
         ArrayList<String> list = userFunctionData.listFunction(fullHttpRequest.headers().get("user"));
         //create json object from list
         Gson gson = new Gson();

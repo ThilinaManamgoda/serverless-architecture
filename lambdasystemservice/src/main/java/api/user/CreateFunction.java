@@ -18,6 +18,13 @@ public class CreateFunction extends RestLogic {
         String content = buf.toString(CharsetUtil.UTF_8);
         CreateFunctionModal modal = new JsonHelper<CreateFunctionModal>(CreateFunctionModal.class).jsonToObj(content);
 
+        /**
+         *  call create function in UserCall interface
+         *  @param 1 - domain name should pass in json object in content
+         *  @param 2 - file path in json
+         *  @param 3 - language in json
+         *  @param 4 - user name in headers
+         */
 
         UserCallImplement call = new UserCallImplement();
         status = call.createFunction(

@@ -37,6 +37,8 @@ public class DeleteFunction extends RestLogic{
 
             /**
              * delete the function
+             * @param 1 - domain name should pass in header
+             * @param 2 - user name should pass in header
              */
             status = call.deleteFunction(remoteHost.getUuid().toString(), fullHttpRequest.headers().get("user"));
 

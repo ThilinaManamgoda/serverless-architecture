@@ -20,7 +20,11 @@ public class UpdateFunction extends RestLogic{
         String content = buf.toString(CharsetUtil.UTF_8);
         UpdateFunctionModal modal = new JsonHelper<UpdateFunctionModal>(UpdateFunctionModal.class).jsonToObj(content);
 
-
+        /**
+         * update an existing function
+         * @param 1 - domain name in json
+         * @param 2 - file location in json
+         */
         UserCallImplement call = new UserCallImplement();
         status = call.updateFunction(
                 modal.getDomainName(),
