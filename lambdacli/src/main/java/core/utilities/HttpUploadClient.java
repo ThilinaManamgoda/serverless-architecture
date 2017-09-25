@@ -37,20 +37,22 @@ import java.io.FileNotFoundException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 
-public final class HttpUploadClient {
+public class HttpUploadClient {
 
-    static final String BASE_URL = System.getProperty("baseUrl", "http://127.0.0.1:8084/file");
-
-    public  static boolean uploadFileAsMultiPart(File file, List<Entry<String, String>> attributes) throws Exception {
+     private String baseUrl;
 
 
-        URI uriSimple = new URI(BASE_URL);
+
+    public HttpUploadClient(String baseUrl){
+        this.baseUrl =baseUrl;
+    }
+
+    public   boolean uploadFileAsMultiPart(File file, List<Entry<String, String>> attributes) throws Exception {
+
+
+        URI uriSimple = new URI(baseUrl);
         String scheme = uriSimple.getScheme() == null? "http" : uriSimple.getScheme();
         String host = uriSimple.getHost() == null? "127.0.0.1" : uriSimple.getHost();
         int port = uriSimple.getPort();
@@ -125,7 +127,7 @@ public final class HttpUploadClient {
     }
 
 
-    private static List<Entry<String, String>> formHeaders(String host, URI uriSimple) throws Exception {
+    private  List<Entry<String, String>> formHeaders(String host, URI uriSimple) throws Exception {
 
 
         HttpRequest request = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.POST, uriSimple.toASCIIString());
@@ -160,7 +162,7 @@ public final class HttpUploadClient {
      *
      * @return the list of HttpData object (attribute and file) to be reused on next post
      */
-    private static List<InterfaceHttpData> buildBody(URI uriSimple, File file, HttpDataFactory factory,
+    private  List<InterfaceHttpData> buildBody(URI uriSimple, File file, HttpDataFactory factory,
             List<Entry<String, String>> attributes) throws Exception {
 
         // Prepare the HTTP request.
@@ -192,7 +194,7 @@ public final class HttpUploadClient {
     /**
      * Multipart example
      */
-    private static void formpostmultipart(
+    private  void formpostmultipart(
             Bootstrap bootstrap, String host, int port, URI uriFile, HttpDataFactory factory,
             Iterable<Entry<String, String>> headers, List<InterfaceHttpData> bodylist) throws Exception {
         // XXX /formpostmultipart

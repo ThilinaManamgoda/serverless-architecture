@@ -45,7 +45,7 @@ public class MainCLI implements CommandMarker {
 
         String result=null;
         try {
-            result= HTTPFileUpload.uploadFile(FileType.JAVA,new File(file),null);
+            result= new HTTPFileUpload().uploadFile(FileType.JAVA,new File(file),null);
         } catch (IOException e) {
             e.printStackTrace();
             result = "wrong";

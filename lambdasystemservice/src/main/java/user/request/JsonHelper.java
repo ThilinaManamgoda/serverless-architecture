@@ -21,7 +21,7 @@ public class JsonHelper<T> {
         this.t = t;
     }
 
-    public String ObjToJson(Object obj) {
+    public String objToJson(Object obj) {
         String tmp = null;
         try {
             tmp = objectMapper.writeValueAsString(obj);

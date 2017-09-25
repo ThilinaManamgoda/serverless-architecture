@@ -19,10 +19,14 @@
 
 package user;
 
+import availability.UserPing;
 import com.coreos.jetcd.kv.GetResponse;
+import com.coreos.jetcd.kv.PutResponse;
 import com.maanadev.mongo.MongodbImplement;
 import compute.ServerLaunchImplement;
 import connections.openstack.OpenstackAdminConnection;
+import db.modal.FunctionDataModal;
+import db.modal.FunctionType;
 import lambda.netty.loadbalancer.core.etcd.EtcdClientException;
 import lambda.netty.loadbalancer.core.etcd.EtcdUtil;
 import lambda.netty.loadbalancer.core.loadbalance.StateImplJsonHelp;
@@ -31,6 +35,9 @@ import lambda.netty.loadbalancer.core.loadbalance.statemodels.State;
 import org.apache.log4j.Logger;
 import org.openstack4j.api.OSClient;
 import org.openstack4j.model.compute.Server;
+import org.jongo.MongoCursor;
+import user.request.JsonHelper;
+import user.request.OsvUpload;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -55,8 +62,24 @@ public class UserCallImplement implements UserCall {
     @Override
     public boolean createFunction(String functionName, String file, String language, String user) {
 
+        boolean status=false;
+        Server server = null;
+        FunctionType langType = null;
 
-        // check the user
+        /**
+         * set language for the input language type
+         */
+        switch (language){
+            case "JAVA" : langType = FunctionType.JAVA;
+            case "PYTHON" : langType = FunctionType.PYTHON;
+            case "NODE_JS" : langType = FunctionType.NODE_JS;
+            case "XML" : langType = FunctionType.XML;
+            default: langType = FunctionType.XML;
+        }
+
+        /**
+         * check the user is defined
+         */
         if (user.equals("admin")) {
             this.os = OpenstackAdminConnection.getOpenstackAdminConnection().getOSclient();
         } else {
@@ -64,20 +87,62 @@ public class UserCallImplement implements UserCall {
 //            this.os = OpenstackUserConnection("")
         }
 
+        /**
+         * create the instance if domain name is unique
+         */
         if (isNameAvailable(functionName)) {
-            // create the server
-            this.serverlaunch = new ServerLaunchImplement(this.os);
-            Server server = this.serverlaunch.createOSVInstance(functionName,
-                    this.getImageID("java"), this.getNetworks(user));
 
+            this.serverlaunch = new ServerLaunchImplement(this.os);
+            server = this.serverlaunch.createOSVInstance(functionName,
+                    this.getImageID(langType), this.getNetworks(user));
+
+        }
+
+
+
+        if(server!=null){
             log.info(functionName + " function instance created");
 
+            /**
+             * check server is booted up to upload the code
+             */
+            UserPing boot = new UserPing(os,os);
+            boolean bootStatus = boot.pingHostByCommand(server.getAccessIPv4());
+            while (!bootStatus){
+                bootStatus = boot.pingHostByCommand(server.getAccessIPv4());
+            }
+            log.info(functionName + " function instance booted");
 
-            // upload code
+            /**
+             * upload the code
+             */
 
-            // write data to etcd
+            String host = server.getAccessIPv4() + ":" + "8000";
+            OsvUpload fileUpload = new OsvUpload(host);
+            status = fileUpload.uploadFile(file,null);
+            if(status){
+                log.info("File upload completed to " + functionName + ":" + host);
+            }
 
-            if(server!=null) return true;
+            /**
+             * write data to etcd
+             */
+            FunctionDataModal modal = new FunctionDataModal();
+            JsonHelper helper = new JsonHelper<FunctionDataModal>(FunctionDataModal.class);
+            String modalJson = helper.objToJson(modal);
+
+            try {
+                CompletableFuture<PutResponse> result = EtcdUtil.putValue(functionName, modalJson);
+                log.info("function creation written to etcd");
+            } catch (EtcdClientException e) {
+                e.printStackTrace();
+            }
+
+
+            // write to db
+
+            return status;
+
         }
         log.error(functionName+" function instance not created");
         return false;
@@ -134,7 +199,7 @@ public class UserCallImplement implements UserCall {
      * @param languageEnv - language environment
      * @return uuid of the image
      */
-    private String getImageID(String languageEnv) {
+    private String getImageID(FunctionType languageEnv) {
         // get data from openstack base
         return "797cb7f8-543a-4a31-b5b2-58841321b25a";
     }
@@ -189,8 +254,10 @@ public class UserCallImplement implements UserCall {
      */
     private boolean isNameAvailable(String name) {
         // check in db
-//        MongodbImplement <
+        MongodbImplement<FunctionDataModal> m = new MongodbImplement<FunctionDataModal>("test3", "persons2", FunctionDataModal.class);
+        MongoCursor<FunctionDataModal> cursor = m.find("domainName",name);
         return true;
+
 
     }
 

@@ -28,8 +28,8 @@ import java.util.Map;
 
 import static core.utilities.FileType.*;
 
-public class HTTPFileUpload  {
-    private static final String FILE_UPLOAD_URL = "http://localhost:8080/file";
+public class HTTPFileUpload  extends HttpUploadClient{
+    private static final String FILE_UPLOAD_URL = "http://localhost:8084/file";
     public static final String FUNCTION_IS_UPLOADED = "Function is uploaded";
     public static final String FUNCTION_UPLOADING_FAILED = "Function uploading failed";
     public static final String FILE_PARAMETER_NAME = "file";
@@ -37,9 +37,12 @@ public class HTTPFileUpload  {
     public static final String FILE_TYPE_IS_NOT_COMPATIBLE = "File type is not compatible";
     public static final String DOT_REGEX = "\\.";
 
+    public HTTPFileUpload() {
+        super(FILE_UPLOAD_URL);
+    }
 
 
-    public static String uploadFile(FileType fileType, File file, List<Map.Entry<String, String>> attributes) throws IOException {
+    public  String uploadFile(FileType fileType, File file, List<Map.Entry<String, String>> attributes) throws IOException {
         if (!file.isFile()) {
             return "Cannot find the file !";
         }
@@ -50,7 +53,7 @@ public class HTTPFileUpload  {
                     return FILE_TYPE_IS_NOT_COMPATIBLE;
                 }
                 try {
-                     result = HttpUploadClient.uploadFileAsMultiPart(file,attributes);
+                     result = uploadFileAsMultiPart(file,attributes);
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -61,7 +64,12 @@ public class HTTPFileUpload  {
                 if (!isFileTypeCorrect(file.getName(), PYTHON)) {
                     return FILE_TYPE_IS_NOT_COMPATIBLE;
                 }
+                try {
+                    result = uploadFileAsMultiPart(file,attributes);
 
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 break;
             }
             case NODE_JS: {
@@ -83,7 +91,7 @@ public class HTTPFileUpload  {
         return  result ? "OK":"NOT OK";
     }
 
-    private static boolean isFileTypeCorrect(String fileName, FileType fileType) {
+    private  boolean isFileTypeCorrect(String fileName, FileType fileType) {
         String[] array = fileName.split(DOT_REGEX);
         return array[array.length - 1].equals(fileType.getExtention());
     }
@@ -92,6 +100,6 @@ public class HTTPFileUpload  {
         List<Map.Entry<String, String>> attributes = new ArrayList<>();
 
         attributes.add(new AbstractMap.SimpleEntry<String, String>("testkey","testValue"));
-        System.out.println(HTTPFileUpload.uploadFile(PYTHON, new File("/home/deshan/main.py"),attributes ));
+        System.out.println(new HTTPFileUpload().uploadFile(PYTHON, new File("/home/deshan/main.py"),attributes ));
     }
 }
