@@ -117,8 +117,8 @@ public class UserCallImplement implements UserCall {
              * upload the code
              */
 
-            String host = server.getAccessIPv4() + ":" + "8000";
-            OsvUpload fileUpload = new OsvUpload(host);
+            String host = server.getAccessIPv4() + ":" + "8000" + "/files/";
+            OsvUpload fileUpload = new OsvUpload(host,user);
             status = fileUpload.uploadFile(file,null);
             if(status){
                 log.info("File upload completed to " + functionName + ":" + host);
@@ -254,8 +254,8 @@ public class UserCallImplement implements UserCall {
      */
     private boolean isNameAvailable(String name) {
         // check in db
-        MongodbImplement<FunctionDataModal> m = new MongodbImplement<FunctionDataModal>("test3", "persons2", FunctionDataModal.class);
-        MongoCursor<FunctionDataModal> cursor = m.find("domainName",name);
+//        MongodbImplement<FunctionDataModal> m = new MongodbImplement<FunctionDataModal>("test3", "persons2", FunctionDataModal.class);
+//        MongoCursor<FunctionDataModal> cursor = m.find("domainName",name);
         return true;
 
 
