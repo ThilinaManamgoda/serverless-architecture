@@ -75,7 +75,7 @@ public class ObjectStorageImpl implements ObjectStorage {
                 minioClient.makeBucket(bucket);
                 logger.info("Bucket is created !");
             }
-            minioClient.putObject(bucket, objName, Launcher.TMP_FILE_LOCATION + file);
+            minioClient.putObject(bucket, objName,  file);
         } catch (InvalidBucketNameException e) {
             logger.error("Minio client", e);
         } catch (NoSuchAlgorithmException e) {

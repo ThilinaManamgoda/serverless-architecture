@@ -59,7 +59,7 @@ public class MainCLI implements CommandMarker {
         attributes.add(new AbstractMap.SimpleEntry<String, String>("function_event",event));
         attributes.add(new AbstractMap.SimpleEntry<String, String>("function_type","2"));
         try {
-            result= new HTTPFileUpload().uploadFile(FileType.JAVA,new File(file),null);
+            result= new HTTPFileUpload().uploadFile(FileType.PYTHON,new File(file),attributes);
 
         } catch (IOException e) {
             e.printStackTrace();

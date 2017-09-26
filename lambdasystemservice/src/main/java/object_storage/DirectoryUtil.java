@@ -45,11 +45,14 @@ public class DirectoryUtil {
         return path;
     }
 
-    public static boolean deleteDir(String name) {
+    public static boolean deleteDir(String name,String file) {
+        Path filePath=Paths.get(BASE_DIR+name+"/"+file);
         Path path = Paths.get(BASE_DIR + name);
         boolean result = false;
 
+
         try {
+            Files.deleteIfExists(filePath);
             result = Files.deleteIfExists(path);
             logger.info(name + " Dir is deleted !");
         } catch (IOException e) {

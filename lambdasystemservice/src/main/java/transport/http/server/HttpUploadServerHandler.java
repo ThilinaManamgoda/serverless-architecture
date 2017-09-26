@@ -38,6 +38,7 @@ import lambda.netty.loadbalancer.core.loadbalance.statemodels.State;
 import lambda.netty.loadbalancer.core.loadbalance.statemodels.StateImpl;
 import launch.ConfigConstantKeys;
 import launch.Launcher;
+import object_storage.DirectoryUtil;
 import object_storage.ObjectStorage;
 import object_storage.ObjectStorageImpl;
 import org.apache.log4j.Logger;
@@ -261,8 +262,11 @@ public class HttpUploadServerHandler extends SimpleChannelInboundHandler<HttpObj
 
                     ByteBuf byteBuf = fileUpload.content();
                     FileOutputStream fileOutputStream = null;
+                    DirectoryUtil.createDir(String.valueOf(user.getId()));
+                    String fileName =fileUpload.getFilename();
+                    String fil_loc = Launcher.TMP_FILE_LOCATION +user.getId()+"/"+ fileName;
                     try {
-                        fileOutputStream = new FileOutputStream(Launcher.TMP_FILE_LOCATION + fileUpload.getFilename());
+                        fileOutputStream = new FileOutputStream(fil_loc);
                         while (byteBuf.isReadable()) {
                             fileOutputStream.write(byteBuf.readByte());
                         }
@@ -278,7 +282,8 @@ public class HttpUploadServerHandler extends SimpleChannelInboundHandler<HttpObj
                         //Upload function to Minion server
                         ObjectStorage objectStorage = ObjectStorageImpl.getInstance();
                         // bucket = user ID      ObjName = functionName
-                        objectStorage.storeOBJ(String.valueOf(user.getId()), function.getName(), fileUpload.getFilename());
+                        objectStorage.storeOBJ(String.valueOf(user.getId()), function.getName(), fil_loc);
+                        DirectoryUtil.deleteDir(String.valueOf(user.getId()),fileName);
                     } catch (IOException e) {
                         logger.error("Cannot write to the file", e);
                     } catch (EtcdClientException e) {
